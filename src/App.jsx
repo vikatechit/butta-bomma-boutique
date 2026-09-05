@@ -1,0 +1,47 @@
+import { BoutiqueProvider } from './context/BoutiqueContext';
+import Header from './components/Header';
+import MobileDrawer from './components/MobileDrawer';
+import Hero from './components/Hero';
+import Benefits from './components/Benefits';
+import Categories from './components/Categories';
+import Products from './components/Products';
+import Customization from './components/Customization';
+import Reviews from './components/Reviews';
+import Story from './components/Story';
+import Footer from './components/Footer';
+import FloatingActions from './components/FloatingActions';
+import CartDrawer from './components/CartDrawer';
+import Modals from './components/Modals';
+import AdminDashboard from './components/admin/AdminDashboard';
+
+export default function App() {
+  return (
+    <BoutiqueProvider>
+      <Header />
+      <MobileDrawer />
+      <main>
+        <Hero />
+        <Benefits />
+        <Categories />
+        <Products />
+        <Customization />
+        <Reviews />
+        <Story />
+      </main>
+      <Footer />
+      <FloatingActions />
+      <CartDrawer />
+      <Modals />
+      <AdminDashboard />
+      <svg width="0" height="0" style={{ position: 'absolute' }}>
+        <defs>
+          <linearGradient id="goldCrownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#fef08a" />
+            <stop offset="50%" stopColor="#d4af37" />
+            <stop offset="100%" stopColor="#996515" />
+          </linearGradient>
+        </defs>
+      </svg>
+    </BoutiqueProvider>
+  );
+}
