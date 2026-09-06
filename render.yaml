@@ -1,0 +1,23 @@
+# Butta Bomma Collections — Render Blueprint
+# https://dashboard.render.com/blueprints
+
+services:
+  - type: web
+    name: butta-bomma-boutique
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: "22"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: https://buttabommaonline.com,https://www.buttabommaonline.com,https://butta-bomma-boutique.onrender.com

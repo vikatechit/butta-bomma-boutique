@@ -2,13 +2,32 @@
  * BUTTA BOMMA COLLECTIONS - DATABASE LAYER
  * Built on Node.js built-in SQLite (DatabaseSync)
  * Permanent zero-config ACID-compliant SQL storage with WAL mode
+ *
+ * Optional DATA_DIR (e.g. /var/data on Render disk) keeps boutique.db
+ * across redeploys. Defaults to this server folder locally.
  */
 
 const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
+const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
-const DB_PATH = path.join(__dirname, 'boutique.db');
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+const DB_PATH = path.join(DATA_DIR, 'boutique.db');
+const BUNDLED_DB = path.join(__dirname, 'boutique.db');
+if (
+  !fs.existsSync(DB_PATH) &&
+  fs.existsSync(BUNDLED_DB) &&
+  path.resolve(DB_PATH) !== path.resolve(BUNDLED_DB)
+) {
+  fs.copyFileSync(BUNDLED_DB, DB_PATH);
+  console.log('📦 Seeded boutique.db into DATA_DIR:', DATA_DIR);
+}
+
 const db = new DatabaseSync(DB_PATH);
 
 // Enable WAL mode & foreign keys

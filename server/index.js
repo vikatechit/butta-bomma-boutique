@@ -47,8 +47,11 @@ const ALLOWED_ORIGINS = [...new Set([...DEFAULT_ORIGINS, ...EXTRA_ORIGINS])];
 // Middleware
 app.use(cors({
   origin(origin, callback) {
-    // Allow same-origin / server-to-server / mobile apps with no Origin header
-    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+    if (
+      !origin ||
+      ALLOWED_ORIGINS.includes(origin) ||
+      /\.onrender\.com$/i.test(origin)
+    ) {
       return callback(null, true);
     }
     return callback(null, false);
@@ -58,10 +61,24 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static file hosting — uploads & policy PDFs only (not the whole project root)
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
+// Static file hosting — uploads & policy PDFs
+const DATA_DIR = process.env.DATA_DIR || __dirname;
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
+const BUNDLED_UPLOADS = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+// Copy bundled upload seeds into DATA_DIR on first boot
+if (fs.existsSync(BUNDLED_UPLOADS) && path.resolve(UPLOADS_DIR) !== path.resolve(BUNDLED_UPLOADS)) {
+  for (const name of fs.readdirSync(BUNDLED_UPLOADS)) {
+    const dest = path.join(UPLOADS_DIR, name);
+    if (!fs.existsSync(dest)) {
+      fs.copyFileSync(path.join(BUNDLED_UPLOADS, name), dest);
+    }
+  }
 }
 const POLICIES_DIR = path.join(__dirname, 'policies');
 if (!fs.existsSync(POLICIES_DIR)) {
@@ -70,6 +87,11 @@ if (!fs.existsSync(POLICIES_DIR)) {
 
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use('/policies', express.static(POLICIES_DIR));
+
+// Health check for Render
+app.get('/api/health', (_req, res) => {
+  res.json({ success: true, status: 'ok', service: 'butta-bomma-boutique' });
+});
 
 // Multer Storage Configuration
 const storage = multer.diskStorage({
