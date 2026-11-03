@@ -23,6 +23,7 @@ export function storageReady() {
 }
 
 function blobBaseUrl() {
+  if (process.env.BLOB_BASE_URL) return process.env.BLOB_BASE_URL.replace(/\/+$/, '');
   const parts = String(process.env.BLOB_READ_WRITE_TOKEN || '').split('_');
   return parts.length >= 5 ? `https://${parts[3].toLowerCase()}.public.blob.vercel-storage.com` : '';
 }
