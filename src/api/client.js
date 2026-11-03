@@ -33,9 +33,9 @@ async function parseJson(res) {
   return data;
 }
 
-export async function apiGet(path, { auth = false } = {}) {
+export async function apiGet(path) {
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: authHeaders(auth),
+    headers: authHeaders(true),
   });
   return parseJson(res);
 }
@@ -84,13 +84,18 @@ export async function apiDelete(path, { auth = false } = {}) {
   return parseJson(res);
 }
 
-export async function uploadFile(file) {
-  const formData = new FormData();
-  formData.append('file', file);
-  const res = await fetch(`${API_BASE}/api/upload`, {
-    method: 'POST',
-    headers: authHeaders(true),
-    body: formData,
-  });
-  return parseJson(res);
+/** Upload straight to Vercel Blob. Only the `reviews` folder is open to shoppers. */
+export async function uploadFile(file, folder = 'media') {
+  const safeName = String(file.name || 'upload').replace(/[^a-zA-Z0-9._-]+/g, '-').slice(-60);
+  try {
+    const { upload } = await import('@vercel/blob/client');
+    const blob = await upload(`${folder}/${safeName}`, file, {
+      access: 'public',
+      handleUploadUrl: `${API_BASE}/api/upload`,
+      clientPayload: getAdminToken() || '',
+    });
+    return { success: true, url: blob.url };
+  } catch (err) {
+    return { success: false, error: err.message || 'Upload failed.' };
+  }
 }

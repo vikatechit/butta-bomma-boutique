@@ -429,20 +429,15 @@ export function StoreProvider({ children }) {
   const handleReviewMediaUpload = useCallback(async (file) => {
     if (!file) return null;
     try {
-      const data = await uploadFile(file);
+      const data = await uploadFile(file, 'reviews');
       if (data.success) {
         return { url: data.url, isVideo: file.type.startsWith('video') };
       }
-    } catch {
-      /* fallback to data URL */
+      alert(data.error || 'Could not upload this file.');
+    } catch (err) {
+      alert('Upload failed: ' + err.message);
     }
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        resolve({ url: e.target.result, isVideo: file.type.startsWith('video') });
-      };
-      reader.readAsDataURL(file);
-    });
+    return null;
   }, []);
 
   const handleAdminLogin = useCallback(

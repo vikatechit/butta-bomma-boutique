@@ -13,4 +13,7 @@ START-SERVER.bat
 
 render.exe
 .render/
+server/
+.vercel
+.env*.local
 
