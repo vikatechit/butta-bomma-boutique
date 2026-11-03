@@ -1,7 +1,8 @@
-import { useBoutique } from '../context/BoutiqueContext';
+import { Link } from 'react-router-dom';
+import { useStore } from '../context/Store';
 
 export default function Footer() {
-  const { openModal, storeSettings } = useBoutique();
+  const { storeSettings } = useStore();
   const logo = storeSettings.logo_url || '/logo.png';
   const wa = storeSettings.whatsapp_number || '917382891980';
 
@@ -33,23 +34,24 @@ export default function Footer() {
         <div className="footer-col">
           <h4 className="footer-col-title">QUICK LINKS</h4>
           <ul className="footer-nav-list">
-            <li><a href="#home">Home</a></li>
-            <li><a href="#categories">Shop Collection</a></li>
-            <li><a href="#new-arrivals">New Arrivals</a></li>
-            <li><a href="#customization">Customization</a></li>
-            <li><a href="#reviews-section">Client Reviews</a></li>
-            <li><a href="#contact">Contact Us</a></li>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/categories">Shop Collection</Link></li>
+            <li><Link to="/shop">New Arrivals</Link></li>
+            <li><Link to="/customization">Customization</Link></li>
+            <li><Link to="/how">How To Order</Link></li>
+            <li><Link to="/reviews">Client Reviews</Link></li>
+            <li><Link to="/contact">Contact Us</Link></li>
           </ul>
         </div>
 
         <div className="footer-col">
           <h4 className="footer-col-title">CUSTOMER SERVICE</h4>
           <ul className="footer-nav-list">
-            <li><a href="/about-us.html" target="_blank" rel="noopener noreferrer">About Us</a></li>
-            <li><a href="/shipping-policy.html" target="_blank" rel="noopener noreferrer">Shipping Policy</a></li>
-            <li><a href="/return-exchange.html" target="_blank" rel="noopener noreferrer">Return & Exchange</a></li>
-            <li><a href="/terms-conditions.html" target="_blank" rel="noopener noreferrer">Terms & Conditions</a></li>
-            <li><a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
+            <li><Link to="/about">About Us</Link></li>
+            <li><Link to="/shipping">Shipping Policy</Link></li>
+            <li><Link to="/refunds">Return & Exchange</Link></li>
+            <li><Link to="/terms">Terms & Conditions</Link></li>
+            <li><Link to="/privacy">Privacy Policy</Link></li>
             <li><a href="/faqs.html" target="_blank" rel="noopener noreferrer">FAQ&apos;s</a></li>
           </ul>
         </div>
@@ -100,14 +102,7 @@ export default function Footer() {
         <div className="footer-bottom-container">
           <div className="copyright-text">
             © 2026 Butta Bomma Collections. All Rights Reserved.{' '}
-            <span
-              className="secret-admin-trigger"
-              onClick={() => openModal('adminLoginModal')}
-              title="Atelier Portal"
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && openModal('adminLoginModal')}
-            >
+            <Link to="/admin" className="secret-admin-trigger" title="Atelier Portal" aria-label="Admin portal">
               <svg
                 viewBox="0 0 24 24"
                 width="14"
@@ -117,7 +112,7 @@ export default function Footer() {
               >
                 <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z" />
               </svg>
-            </span>
+            </Link>
           </div>
 
           <div className="developer-credit-box">

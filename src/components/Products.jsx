@@ -1,4 +1,4 @@
-import { useBoutique } from '../context/BoutiqueContext';
+import { useStore } from '../context/Store';
 
 const CATEGORY_PILLS = [
   { id: 'all', label: 'All Items' },
@@ -22,7 +22,7 @@ export default function Products() {
     resetFilters,
     openProductDetail,
     addToCartDirect,
-  } = useBoutique();
+  } = useStore();
 
   return (
     <section className="section-container" id="new-arrivals">

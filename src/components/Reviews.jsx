@@ -1,7 +1,7 @@
-import { useBoutique } from '../context/BoutiqueContext';
+import { useStore } from '../context/Store';
 
 export default function Reviews() {
-  const { reviews, activeReviewIndex, triggerStackNext, openModal } = useBoutique();
+  const { reviews, activeReviewIndex, triggerStackNext, openModal } = useStore();
   const total = reviews.length;
 
   return (

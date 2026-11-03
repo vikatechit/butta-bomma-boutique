@@ -1,12 +1,9 @@
-import { useBoutique } from '../context/BoutiqueContext';
+import { useNavigate } from 'react-router-dom';
+import { useStore } from '../context/Store';
 
 export default function Categories() {
-  const { categories, filterCategory } = useBoutique();
-
-  const onSelect = (cat) => {
-    filterCategory(cat);
-    document.getElementById('new-arrivals')?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const { categories, filterCategory } = useStore();
+  const navigate = useNavigate();
 
   return (
     <section className="section-container" id="categories">
@@ -15,10 +12,17 @@ export default function Categories() {
         <div className="section-decorative-divider">◆ ─── ❖ ─── ◆</div>
         <p className="section-subheading">Handcrafted heirloom weaves, bridal masterworks, and festive couture.</p>
       </div>
-
       <div className="category-cards-grid">
         {categories.map((cat) => (
-          <div key={cat.id} className="category-card" onClick={() => onSelect(cat.slug)}>
+          <button
+            type="button"
+            key={cat.id}
+            className="category-card"
+            onClick={() => {
+              filterCategory(cat.slug);
+              navigate(`/shop/${cat.slug}`);
+            }}
+          >
             <div className="category-img-holder">
               <img src={cat.image_url} alt={`${cat.title} Collection`} loading="lazy" />
               <div className="category-overlay-gradient" />
@@ -27,7 +31,7 @@ export default function Categories() {
               <h3>{cat.title}</h3>
               <span className="category-cta-link">{cat.cta}</span>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </section>

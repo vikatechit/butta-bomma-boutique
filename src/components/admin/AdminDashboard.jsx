@@ -13,7 +13,7 @@ import {
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
 import { apiGet } from '../../api/client';
-import { useBoutique } from '../../context/BoutiqueContext';
+import { useStore } from '../../context/Store';
 
 ChartJS.register(
   CategoryScale,
@@ -178,7 +178,7 @@ function OverviewTab() {
 }
 
 function HeroTab() {
-  const { heroSlides, openAddHeroModal, openEditHeroModal, deleteHeroSlide } = useBoutique();
+  const { heroSlides, openAddHeroModal, openEditHeroModal, deleteHeroSlide } = useStore();
 
   return (
     <>
@@ -224,7 +224,7 @@ function HeroTab() {
               <td>
                 <strong style={{ color: '#fff', fontSize: 14 }}>{s.label}</strong>
               </td>
-              <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{s.link || '#categories'}</td>
+              <td style={{ color: 'var(--text-muted)', fontSize: 12 }}>{s.link || '/categories'}</td>
               <td>
                 <strong style={{ color: 'var(--gold-400)' }}>{s.sort_order || 0}</strong>
               </td>
@@ -253,7 +253,7 @@ function HeroTab() {
 }
 
 function CategoriesTab() {
-  const { categories, updateCategory, uploadFile } = useBoutique();
+  const { categories, updateCategory, uploadFile } = useStore();
   const [drafts, setDrafts] = useState({});
   const [savingId, setSavingId] = useState(null);
   const [uploadingId, setUploadingId] = useState(null);
@@ -447,7 +447,7 @@ function CategoriesTab() {
 }
 
 function InventoryTab() {
-  const { products, adjustProductStock, setProductStock, deleteProduct, switchAdminTab } = useBoutique();
+  const { products, adjustProductStock, setProductStock, deleteProduct, switchAdminTab } = useStore();
 
   return (
     <>
@@ -525,7 +525,7 @@ function InventoryTab() {
 }
 
 function AddProductTab() {
-  const { handleAdminAddProduct, uploadFile } = useBoutique();
+  const { handleAdminAddProduct, uploadFile } = useStore();
   const [imageUrl, setImageUrl] = useState('');
   const [preview, setPreview] = useState('');
 
@@ -659,7 +659,7 @@ function AddProductTab() {
 }
 
 function OrdersTab({ onPendingCount }) {
-  const { updateOrderStatus, deleteAdminOrder } = useBoutique();
+  const { updateOrderStatus, deleteAdminOrder } = useStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -790,7 +790,7 @@ function OrdersTab({ onPendingCount }) {
 }
 
 function ReviewsTab() {
-  const { reviews, deleteReviewItem } = useBoutique();
+  const { reviews, deleteReviewItem } = useStore();
 
   return (
     <>
@@ -848,7 +848,7 @@ function ReviewsTab() {
 }
 
 function PaymentsTab() {
-  const { storeSettings, handleSavePaymentSettings } = useBoutique();
+  const { storeSettings, handleSavePaymentSettings } = useStore();
 
   return (
     <>
@@ -925,7 +925,7 @@ function PaymentsTab() {
 }
 
 function SecurityTab() {
-  const { handleChangePassword } = useBoutique();
+  const { handleChangePassword } = useStore();
 
   return (
     <>
@@ -978,15 +978,13 @@ const TABS = [
 ];
 
 export default function AdminDashboard() {
-  const { modals, currentAdminTab, switchAdminTab, logoutAdmin, storeSettings } = useBoutique();
+  const { currentAdminTab, switchAdminTab, logoutAdmin, storeSettings } = useStore();
   const [pendingCount, setPendingCount] = useState(0);
   const logo = storeSettings.logo_url || '/logo.png';
 
-  if (!modals.adminDashboardModal) return null;
-
   return (
-    <div className="modal-overlay active" id="adminDashboardModal">
-      <div className="modal-card modal-xl admin-modal-container" onClick={(e) => e.stopPropagation()}>
+    <section className="admin-page" id="adminDashboard">
+      <div className="admin-modal-container admin-page-card">
         <div className="admin-topbar">
           <div className="admin-title-badge">
             <img src={logo} alt="Logo" style={{ height: 48, objectFit: 'contain' }} />
@@ -1029,6 +1027,6 @@ export default function AdminDashboard() {
           {currentAdminTab === 'security' && <SecurityTab />}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

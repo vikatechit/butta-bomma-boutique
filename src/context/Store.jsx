@@ -28,7 +28,7 @@ const PRICE_TIERS = [
   { id: 'above15000', title: 'Above ₹15,000', desc: 'Bridal Couture' },
 ];
 
-const BoutiqueContext = createContext(null);
+const StoreContext = createContext(null);
 
 function loadCartFromStorage() {
   try {
@@ -59,7 +59,7 @@ export function normalizeSizes(sizes) {
   return ['Standard'];
 }
 
-export function BoutiqueProvider({ children }) {
+export function StoreProvider({ children }) {
   const [products, setProducts] = useState([]);
   const [heroSlides, setHeroSlides] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -80,15 +80,21 @@ export function BoutiqueProvider({ children }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [modals, setModals] = useState({
     productDetailModal: false,
-    checkoutModal: false,
     writeReviewModal: false,
-    orderSuccessModal: false,
     accountModal: false,
-    adminLoginModal: false,
     heroSlideModal: false,
-    adminDashboardModal: false,
   });
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(() => Boolean(getAdminToken()));
+  const [toast, setToast] = useState('');
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const t = setTimeout(() => setToast(''), 3200);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const showToast = useCallback((message) => setToast(message), []);
 
   const openModal = useCallback((name) => {
     setModals((prev) => ({ ...prev, [name]: true }));
@@ -166,33 +172,6 @@ export function BoutiqueProvider({ children }) {
       setLoading(false);
     })();
   }, [fetchStoreSettings, fetchHeroSlides, fetchCategories, fetchProducts, fetchReviews]);
-
-  useEffect(() => {
-    const onKeyDown = (e) => {
-      if (e.ctrlKey && e.shiftKey && (e.key === '8' || e.key === '*' || e.code === 'Digit8' || e.code === 'Numpad8')) {
-        e.preventDefault();
-        openModal('adminLoginModal');
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [openModal]);
-
-  const openAdminDashboard = useCallback(() => {
-    openModal('adminDashboardModal');
-  }, [openModal]);
-
-  useEffect(() => {
-    const checkAdminRoute = () => {
-      if (window.location.hash === '#admin') {
-        if (getAdminToken()) openAdminDashboard();
-        else openModal('adminLoginModal');
-      }
-    };
-    checkAdminRoute();
-    window.addEventListener('hashchange', checkAdminRoute);
-    return () => window.removeEventListener('hashchange', checkAdminRoute);
-  }, [openAdminDashboard, openModal]);
 
   const cartCount = useMemo(() => cart.reduce((sum, i) => sum + i.qty, 0), [cart]);
   const cartTotal = useMemo(() => cart.reduce((sum, i) => sum + i.price * i.qty, 0), [cart]);
@@ -334,20 +313,11 @@ export function BoutiqueProvider({ children }) {
     openCart();
   }, [selectedProduct, selectedModalSize, addToCart, closeModal, openCart]);
 
-  const openCheckoutModal = useCallback(() => {
-    if (!cart.length) {
-      alert('Your shopping bag is empty!');
-      return;
-    }
-    closeCart();
-    openModal('checkoutModal');
-  }, [cart.length, closeCart, openModal]);
-
   const handleCheckoutSubmit = useCallback(
     async (formData) => {
       if (!cart.length) {
         alert('Cart is empty.');
-        return;
+        return null;
       }
       try {
         const data = await apiPost('/api/orders', {
@@ -362,18 +332,19 @@ export function BoutiqueProvider({ children }) {
         });
         if (!data.success) {
           alert(data.error || 'Failed to place order.');
-          return;
+          return null;
         }
         setLastCreatedOrder(data.order);
+        sessionStorage.setItem('bb_last_order', JSON.stringify(data.order));
         persistCart([]);
-        closeModal('checkoutModal');
-        openModal('orderSuccessModal');
-        await fetchProducts();
+        fetchProducts();
+        return data.order;
       } catch (err) {
         alert('Failed to connect to server: ' + err.message);
+        return null;
       }
     },
-    [cart, persistCart, closeModal, openModal, fetchProducts]
+    [cart, persistCart, fetchProducts]
   );
 
   const openWhatsAppInquiry = useCallback(
@@ -384,24 +355,25 @@ export function BoutiqueProvider({ children }) {
     [storeSettings.whatsapp_number]
   );
 
-  const sendWhatsAppReceipt = useCallback(() => {
-    if (!lastCreatedOrder) return;
+  const sendWhatsAppReceipt = useCallback((orderArg) => {
+    const order = orderArg?.order_number ? orderArg : lastCreatedOrder;
+    if (!order) return;
     const num = storeSettings.whatsapp_number || DEFAULT_SETTINGS.whatsapp_number;
-    const itemsText = (lastCreatedOrder.items || [])
+    const itemsText = (order.items || [])
       .map((i) => `• ${i.name} (Size: ${i.size}, Qty: ${i.qty}) - ₹${i.price * i.qty}`)
-      .join('%0A');
+      .join('\n');
     const msg =
-      `👑 *BUTTA BOMMA COLLECTIONS - ORDER CONFIRMATION*%0A%0A` +
-      `*Order Number:* #${lastCreatedOrder.order_number}%0A` +
-      `*Customer Name:* ${lastCreatedOrder.customer_name}%0A` +
-      `*Mobile:* ${lastCreatedOrder.mobile}%0A` +
-      `*City/Address:* ${lastCreatedOrder.address}, ${lastCreatedOrder.city} - ${lastCreatedOrder.pincode}%0A` +
-      `*Payment Method:* ${lastCreatedOrder.payment_method}%0A` +
-      (lastCreatedOrder.cod_advance ? `*COD Advance:* ₹${lastCreatedOrder.cod_advance}%0A` : '') +
-      `*Total Amount:* ₹${lastCreatedOrder.total_amount}%0A%0A` +
-      `*Items:*%0A${itemsText}%0A%0A` +
+      `👑 *BUTTA BOMMA COLLECTIONS - ORDER CONFIRMATION*\n\n` +
+      `*Order Number:* #${order.order_number}\n` +
+      `*Customer Name:* ${order.customer_name}\n` +
+      `*Mobile:* ${order.mobile}\n` +
+      `*City/Address:* ${order.address}, ${order.city} - ${order.pincode}\n` +
+      `*Payment Method:* ${order.payment_method}\n` +
+      (order.cod_advance ? `*COD Advance:* ₹${order.cod_advance}\n` : '') +
+      `*Total Amount:* ₹${order.total_amount}\n\n` +
+      `*Items:*\n${itemsText}\n\n` +
       `Please confirm my piece dispatch and send courier tracking. Thank you!`;
-    window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
+    window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`, '_blank');
   }, [lastCreatedOrder, storeSettings.whatsapp_number]);
 
   const orderCartOnWhatsApp = useCallback(() => {
@@ -482,25 +454,21 @@ export function BoutiqueProvider({ children }) {
           return false;
         }
         setAdminToken(data.token);
-        closeModal('adminLoginModal');
-        openAdminDashboard();
+        setIsAdmin(true);
         return true;
       } catch (err) {
         alert('Login connection error: ' + err.message);
         return false;
       }
     },
-    [closeModal, openAdminDashboard]
+    []
   );
 
   const logoutAdmin = useCallback(() => {
     clearAdminToken();
-    closeModal('adminDashboardModal');
-    if (window.location.hash === '#admin') {
-      history.pushState('', document.title, window.location.pathname + window.location.search);
-    }
-    alert('You have logged out of the Atelier Control Room.');
-  }, [closeModal]);
+    setIsAdmin(false);
+    showToast('You have logged out of the Atelier Control Room.');
+  }, [showToast]);
 
   const switchAdminTab = useCallback((tabName) => {
     setCurrentAdminTab(tabName);
@@ -510,7 +478,7 @@ export function BoutiqueProvider({ children }) {
     setEditingHeroSlide({
       id: null,
       label: '',
-      link: '#categories',
+      link: '/categories',
       sort_order: heroSlides.length + 1,
       image_url: '',
     });
@@ -757,6 +725,9 @@ export function BoutiqueProvider({ children }) {
     searchResults,
     modals,
     loading,
+    isAdmin,
+    toast,
+    showToast,
     openModal,
     closeModal,
     filterCategory,
@@ -769,7 +740,6 @@ export function BoutiqueProvider({ children }) {
     addToCartFromModal,
     updateCartQty,
     openProductDetail,
-    openCheckoutModal,
     handleCheckoutSubmit,
     openWhatsAppInquiry,
     sendWhatsAppReceipt,
@@ -780,7 +750,6 @@ export function BoutiqueProvider({ children }) {
     handleReviewMediaUpload,
     handleAdminLogin,
     logoutAdmin,
-    openAdminDashboard,
     switchAdminTab,
     openAddHeroModal,
     openEditHeroModal,
@@ -803,12 +772,12 @@ export function BoutiqueProvider({ children }) {
     uploadFile,
   };
 
-  return <BoutiqueContext.Provider value={value}>{children}</BoutiqueContext.Provider>;
+  return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
 
-export function useBoutique() {
-  const ctx = useContext(BoutiqueContext);
-  if (!ctx) throw new Error('useBoutique must be used within BoutiqueProvider');
+export function useStore() {
+  const ctx = useContext(StoreContext);
+  if (!ctx) throw new Error('useStore must be used within StoreProvider');
   return ctx;
 }
 

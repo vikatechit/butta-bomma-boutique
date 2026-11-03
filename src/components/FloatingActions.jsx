@@ -1,7 +1,7 @@
-import { useBoutique } from '../context/BoutiqueContext';
+import { useStore } from '../context/Store';
 
 export default function FloatingActions() {
-  const { storeSettings } = useBoutique();
+  const { storeSettings } = useStore();
   const wa = storeSettings.whatsapp_number || '917382891980';
 
   return (

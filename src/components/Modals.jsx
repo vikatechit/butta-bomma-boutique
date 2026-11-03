@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { normalizeSizes, useBoutique } from '../context/BoutiqueContext';
+import { normalizeSizes, useStore } from '../context/Store';
 
 function ModalOverlay({ id, active, onClose, children, cardClass = 'modal-md' }) {
   if (!active) return null;
@@ -21,20 +21,14 @@ export default function Modals() {
     setSelectedModalSize,
     addToCartFromModal,
     openWhatsAppInquiry,
-    cartCount,
-    cartTotal,
-    handleCheckoutSubmit,
-    lastCreatedOrder,
-    sendWhatsAppReceipt,
     lookupCustomerOrders,
     handleReviewSubmit,
     handleReviewMediaUpload,
-    handleAdminLogin,
     editingHeroSlide,
     setEditingHeroSlide,
     handleHeroSlideSave,
     uploadFile,
-  } = useBoutique();
+  } = useStore();
 
   const [lookupMobile, setLookupMobile] = useState('');
   const [lookupOrders, setLookupOrders] = useState(null);
@@ -143,135 +137,6 @@ export default function Modals() {
             </div>
           </div>
         ) : null}
-      </ModalOverlay>
-
-      {/* Checkout */}
-      <ModalOverlay
-        id="checkoutModal"
-        active={modals.checkoutModal}
-        onClose={() => closeModal('checkoutModal')}
-      >
-        <button className="modal-close-icon" onClick={() => closeModal('checkoutModal')}>✕</button>
-        <div className="modal-header-banner">
-          <h2>Complete Your Royal Order</h2>
-          <p>Enter your delivery details. We will confirm your piece & dispatch immediately.</p>
-        </div>
-        <form
-          className="luxury-form"
-          id="checkoutForm"
-          onSubmit={(e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            handleCheckoutSubmit({
-              name: fd.get('name').toString().trim(),
-              mobile: fd.get('mobile').toString().trim(),
-              address: fd.get('address').toString().trim(),
-              city: fd.get('city').toString().trim(),
-              pincode: fd.get('pincode').toString().trim(),
-              paymentMethod: fd.get('paymentMethod').toString(),
-              notes: fd.get('notes').toString().trim(),
-            });
-          }}
-        >
-          <div className="form-row-2">
-            <div className="form-group">
-              <label htmlFor="custFullName">Full Name *</label>
-              <input type="text" id="custFullName" name="name" required placeholder="e.g. Ananya Sharma" />
-            </div>
-            <div className="form-group">
-              <label htmlFor="custMobile">WhatsApp Mobile Number *</label>
-              <input
-                type="tel"
-                id="custMobile"
-                name="mobile"
-                inputMode="numeric"
-                maxLength={10}
-                required
-                placeholder="10-digit mobile number"
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="custAddress">Delivery Address *</label>
-            <textarea
-              id="custAddress"
-              name="address"
-              rows={2}
-              required
-              placeholder="House/Flat No, Apartment, Street name"
-            />
-          </div>
-
-          <div className="form-row-2">
-            <div className="form-group">
-              <label htmlFor="custCity">City / District *</label>
-              <input type="text" id="custCity" name="city" required placeholder="e.g. Hyderabad" />
-            </div>
-            <div className="form-group">
-              <label htmlFor="custPincode">Pincode *</label>
-              <input
-                type="text"
-                id="custPincode"
-                name="pincode"
-                inputMode="numeric"
-                maxLength={6}
-                required
-                placeholder="e.g. 500034"
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="paymentMethodSelect">Payment Preference *</label>
-            <select id="paymentMethodSelect" name="paymentMethod" required>
-              <option value="UPI / Online Transfer (GPay / PhonePe / Paytm / Razorpay)">
-                UPI / Online Transfer (GPay / PhonePe / Razorpay)
-              </option>
-              <option value="Cash On Delivery (COD)">Cash On Delivery (COD)</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="custNotes">Special Stitching / Blouse Measurements (Optional)</label>
-            <input
-              type="text"
-              id="custNotes"
-              name="notes"
-              placeholder="e.g. Custom blouse bust 36, waist 30, fall-pico needed"
-            />
-          </div>
-
-          <div className="checkout-order-summary-box" id="checkoutSummaryBox">
-            <div
-              style={{
-                background: 'rgba(8,52,39,0.5)',
-                padding: 14,
-                border: '1px solid var(--border-gold)',
-                borderRadius: 4,
-                marginBottom: 14,
-              }}
-            >
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  fontWeight: 700,
-                  color: 'var(--gold-400)',
-                  fontSize: 16,
-                }}
-              >
-                <span>Grand Total ({cartCount} items):</span>
-                <span>₹{cartTotal.toLocaleString('en-IN')}</span>
-              </div>
-              <div style={{ fontSize: 11, color: '#86efac', marginTop: 4 }}>✓ Free Pan-India Courier Included</div>
-            </div>
-          </div>
-
-          <button type="submit" className="gold-luxury-btn btn-full">
-            CONFIRM ORDER & PROCEED ›
-          </button>
-        </form>
       </ModalOverlay>
 
       {/* Review */}
@@ -396,67 +261,6 @@ export default function Modals() {
         </form>
       </ModalOverlay>
 
-      {/* Order Success */}
-      <ModalOverlay
-        id="orderSuccessModal"
-        active={modals.orderSuccessModal}
-        onClose={() => closeModal('orderSuccessModal')}
-        cardClass="modal-sm text-center"
-      >
-        <div className="success-crest-icon">👑</div>
-        <h2 className="success-title">Order Placed Successfully!</h2>
-        <div className="order-receipt-box" id="orderReceiptBox">
-          {lastCreatedOrder ? (
-            <div
-              style={{
-                background: 'var(--forest-800)',
-                border: '1px solid var(--border-gold)',
-                padding: 16,
-                borderRadius: 4,
-                margin: '16px 0',
-                textAlign: 'left',
-              }}
-            >
-              <p>
-                <strong>Order ID:</strong> #{lastCreatedOrder.order_number}
-              </p>
-              <p>
-                <strong>Patron:</strong> {lastCreatedOrder.customer_name}
-              </p>
-              <p>
-                <strong>WhatsApp:</strong> +91 {lastCreatedOrder.mobile}
-              </p>
-              <p>
-                <strong>Delivery:</strong> {lastCreatedOrder.city} - {lastCreatedOrder.pincode}
-              </p>
-              <p>
-                <strong>Total:</strong> ₹{lastCreatedOrder.total_amount?.toLocaleString('en-IN')}
-              </p>
-              <p>
-                <strong>Payment Method:</strong> {lastCreatedOrder.payment_method}
-              </p>
-              {lastCreatedOrder.cod_advance ? (
-                <p style={{ color: '#fef08a' }}>
-                  <strong>COD Advance Token:</strong> ₹{lastCreatedOrder.cod_advance}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-        <p className="success-note">
-          Your order has been recorded in our boutique system. Our styling specialist will reach out for any sizing
-          preferences.
-        </p>
-        <div className="modal-actions-row">
-          <button className="gold-luxury-btn" onClick={sendWhatsAppReceipt}>
-            CONFIRM ON WHATSAPP
-          </button>
-          <button className="outline-gold-btn" onClick={() => closeModal('orderSuccessModal')}>
-            CLOSE
-          </button>
-        </div>
-      </ModalOverlay>
-
       {/* Account Lookup */}
       <ModalOverlay
         id="accountModal"
@@ -538,42 +342,6 @@ export default function Modals() {
         ) : null}
       </ModalOverlay>
 
-      {/* Admin Login */}
-      <ModalOverlay
-        id="adminLoginModal"
-        active={modals.adminLoginModal}
-        onClose={() => closeModal('adminLoginModal')}
-        cardClass="modal-xs"
-      >
-        <button className="modal-close-icon" onClick={() => closeModal('adminLoginModal')}>✕</button>
-        <div className="admin-login-header text-center">
-          <span className="admin-shield-icon">🔐</span>
-          <h2>Boutique Admin Portal</h2>
-          <p>Private Atelier Management Login</p>
-        </div>
-        <form
-          className="luxury-form"
-          id="adminLoginForm"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            await handleAdminLogin(fd.get('username').toString().trim(), fd.get('password').toString());
-          }}
-        >
-          <div className="form-group">
-            <label htmlFor="adminUsername">Admin Username</label>
-            <input type="text" id="adminUsername" name="username" defaultValue="admin" required />
-          </div>
-          <div className="form-group">
-            <label htmlFor="adminPassword">Passcode / Password</label>
-            <input type="password" id="adminPassword" name="password" placeholder="Enter admin password" required />
-          </div>
-          <button type="submit" className="gold-luxury-btn btn-full" style={{ marginTop: 12 }}>
-            ENTER CONTROL ROOM ›
-          </button>
-        </form>
-      </ModalOverlay>
-
       {/* Hero Slide Form */}
       <ModalOverlay
         id="heroSlideModal"
@@ -597,7 +365,7 @@ export default function Modals() {
             await handleHeroSlideSave({
               editId: editingHeroSlide?.id || null,
               label: fd.get('label').toString().trim(),
-              link: fd.get('link').toString().trim() || '#categories',
+              link: fd.get('link').toString().trim() || '/categories',
               sort_order: parseInt(fd.get('sort_order'), 10) || 0,
               image_url: fd.get('image_url').toString().trim(),
             });
@@ -622,8 +390,8 @@ export default function Modals() {
               type="text"
               id="heroSlideLink"
               name="link"
-              defaultValue={editingHeroSlide?.link || '#categories'}
-              placeholder="e.g. #categories or #new-arrivals"
+              defaultValue={editingHeroSlide?.link || '/categories'}
+              placeholder="e.g. /categories, /shop/sarees or /customization"
               key={`link-${editingHeroSlide?.id || 'new'}`}
             />
           </div>

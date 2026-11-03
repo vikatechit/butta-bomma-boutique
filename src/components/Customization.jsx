@@ -1,7 +1,7 @@
-import { useBoutique } from '../context/BoutiqueContext';
+import { useStore } from '../context/Store';
 
 export default function Customization() {
-  const { openWhatsAppInquiry } = useBoutique();
+  const { openWhatsAppInquiry } = useStore();
 
   return (
     <section className="customization-banner-section" id="customization">

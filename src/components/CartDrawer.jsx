@@ -1,6 +1,8 @@
-import { useBoutique } from '../context/BoutiqueContext';
+import { useNavigate } from 'react-router-dom';
+import { useStore } from '../context/Store';
 
 export default function CartDrawer() {
+  const navigate = useNavigate();
   const {
     cart,
     cartOpen,
@@ -8,9 +10,19 @@ export default function CartDrawer() {
     cartTotal,
     closeCart,
     updateCartQty,
-    openCheckoutModal,
     orderCartOnWhatsApp,
-  } = useBoutique();
+  } = useStore();
+
+  const goToCheckout = () => {
+    if (!cart.length) return;
+    closeCart();
+    navigate('/order');
+  };
+
+  const browse = () => {
+    closeCart();
+    navigate('/shop');
+  };
 
   return (
     <div className={`cart-drawer-backdrop${cartOpen ? ' active' : ''}`} id="cartDrawerBackdrop" onClick={closeCart}>
@@ -29,7 +41,7 @@ export default function CartDrawer() {
           {!cart.length ? (
             <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
               <p style={{ fontSize: 18, fontFamily: 'var(--font-display)' }}>Your shopping bag is empty.</p>
-              <button className="gold-luxury-btn" onClick={closeCart} style={{ marginTop: 16 }}>
+              <button className="gold-luxury-btn" onClick={browse} style={{ marginTop: 16 }}>
                 EXPLORE WEAVES ›
               </button>
             </div>
@@ -66,7 +78,7 @@ export default function CartDrawer() {
             <span className="free-shipping-tag">FREE (Pan India)</span>
           </div>
           <div className="cart-checkout-actions">
-            <button className="gold-luxury-btn btn-full" onClick={openCheckoutModal}>
+            <button className="gold-luxury-btn btn-full" onClick={goToCheckout} disabled={!cart.length}>
               PROCEED TO CHECKOUT ›
             </button>
             <button className="outline-gold-btn btn-full" onClick={orderCartOnWhatsApp}>

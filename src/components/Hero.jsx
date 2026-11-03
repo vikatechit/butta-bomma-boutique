@@ -1,9 +1,12 @@
 import { useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
-import { useBoutique } from '../context/BoutiqueContext';
+import { useStore } from '../context/Store';
+import { isExternal, toRoute } from '../data/brand';
 
 export default function Hero() {
-  const { heroSlides } = useBoutique();
+  const { heroSlides } = useStore();
+  const navigate = useNavigate();
   const rootRef = useRef(null);
 
   useEffect(() => {
@@ -55,10 +58,6 @@ export default function Hero() {
     return () => cleanups.forEach((fn) => fn());
   }, [heroSlides]);
 
-  const scrollTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
     <section className="hero-section" id="home">
       <div className="hero-backdrop" />
@@ -78,10 +77,10 @@ export default function Hero() {
           </h1>
 
           <div className="hero-cta-group">
-            <button className="gold-luxury-btn" onClick={() => scrollTo('categories')}>
+            <button className="gold-luxury-btn" onClick={() => navigate('/categories')}>
               EXPLORE COLLECTION <span className="btn-arrow">›</span>
             </button>
-            <button className="outline-gold-btn" onClick={() => scrollTo('customization')}>
+            <button className="outline-gold-btn" onClick={() => navigate('/customization')}>
               BESPOKE STITCHING
             </button>
           </div>
@@ -104,14 +103,18 @@ export default function Hero() {
             aria-label="Featured Collection Gallery"
             ref={rootRef}
           >
-            {heroSlides.map((slide, index) => (
-              <a
-                key={slide.id}
-                href={slide.link || '#categories'}
-                className={`ag-panel${index === 0 ? ' ag-panel--active' : ''}`}
-                data-index={index}
-                role="listitem"
-              >
+            {heroSlides.map((slide, index) => {
+              const panelProps = {
+                className: `ag-panel${index === 0 ? ' ag-panel--active' : ''}`,
+                'data-index': index,
+                role: 'listitem',
+              };
+              const Panel = isExternal(slide.link) ? 'a' : Link;
+              const linkProps = isExternal(slide.link)
+                ? { href: slide.link, target: '_blank', rel: 'noreferrer' }
+                : { to: toRoute(slide.link) };
+              return (
+              <Panel key={slide.id} {...panelProps} {...linkProps}>
                 <div className="ag-panel__frame">
                   <div className="ag-panel__media">
                     <img src={slide.image_url} alt={slide.label} loading="eager" />
@@ -122,8 +125,9 @@ export default function Hero() {
                     <span className="ag-panel__text">{slide.label}</span>
                   </div>
                 </div>
-              </a>
-            ))}
+              </Panel>
+              );
+            })}
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
-import { useBoutique } from '../context/BoutiqueContext';
+import { Link, NavLink } from 'react-router-dom';
+import { useStore } from '../context/Store';
 
 export default function Header() {
   const {
@@ -13,41 +14,33 @@ export default function Header() {
     openModal,
     setMobileDrawerOpen,
     storeSettings,
-    filterCategory,
-  } = useBoutique();
+    categories,
+  } = useStore();
 
   const logo = storeSettings.logo_url || '/logo.png';
-
-  const shopCategory = (cat) => {
-    filterCategory(cat);
-    document.getElementById('new-arrivals')?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   return (
     <header className="main-header" id="mainHeader">
       <div className="header-container">
-        <a href="#home" className="brand-logo-clean" aria-label="Butta Bomma Collections Home">
+        <Link to="/" className="brand-logo-clean" aria-label="Butta Bomma Collections Home">
           <img src={logo} alt="Butta Bomma Collections" className="main-logo-image" />
-        </a>
+        </Link>
 
         <nav className="desktop-nav">
-          <a href="#home" className="nav-link active">HOME</a>
+          <NavLink to="/" className="nav-link" end>HOME</NavLink>
           <div className="nav-dropdown-wrapper">
-            <a href="#categories" className="nav-link">SHOP <span className="dropdown-arrow">▾</span></a>
+            <NavLink to="/categories" className="nav-link">SHOP <span className="dropdown-arrow">▾</span></NavLink>
             <div className="nav-dropdown-menu">
-              <a href="#categories" onClick={() => shopCategory('sarees')}>Royal Sarees</a>
-              <a href="#categories" onClick={() => shopCategory('lehengas')}>Bridal Lehengas</a>
-              <a href="#categories" onClick={() => shopCategory('dresses')}>Festive Dresses</a>
-              <a href="#categories" onClick={() => shopCategory('kurtis')}>Designer Kurtis</a>
-              <a href="#categories" onClick={() => shopCategory('suits')}>Anarkali & Suits</a>
-              <a href="#categories" onClick={() => shopCategory('accessories')}>Zari & Accessories</a>
+              {categories.map((cat) => (
+                <Link key={cat.id} to={`/shop/${cat.slug}`}>{cat.title}</Link>
+              ))}
             </div>
           </div>
-          <a href="#new-arrivals" className="nav-link">NEW ARRIVALS</a>
-          <a href="#customization" className="nav-link">CUSTOMIZATION</a>
-          <a href="#reviews-section" className="nav-link">CLIENT REVIEWS</a>
-          <a href="#story" className="nav-link">OUR HERITAGE</a>
-          <a href="#contact" className="nav-link">CONTACT</a>
+          <NavLink to="/shop" className="nav-link">NEW ARRIVALS</NavLink>
+          <NavLink to="/customization" className="nav-link">CUSTOMIZATION</NavLink>
+          <NavLink to="/how" className="nav-link">HOW TO ORDER</NavLink>
+          <NavLink to="/reviews" className="nav-link">REVIEWS</NavLink>
+          <NavLink to="/contact" className="nav-link">CONTACT</NavLink>
         </nav>
 
         <div className="header-action-group">

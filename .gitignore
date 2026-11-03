@@ -10,3 +10,7 @@ boutique.db-wal
 .hostinger-staging
 .hostinger-upload
 START-SERVER.bat
+
+render.exe
+.render/
+

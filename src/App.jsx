@@ -1,47 +1,56 @@
-import { BoutiqueProvider } from './context/BoutiqueContext';
-import Header from './components/Header';
-import MobileDrawer from './components/MobileDrawer';
-import Hero from './components/Hero';
-import Benefits from './components/Benefits';
-import Categories from './components/Categories';
-import Products from './components/Products';
-import Customization from './components/Customization';
-import Reviews from './components/Reviews';
-import Story from './components/Story';
-import Footer from './components/Footer';
-import FloatingActions from './components/FloatingActions';
-import CartDrawer from './components/CartDrawer';
-import Modals from './components/Modals';
-import AdminDashboard from './components/admin/AdminDashboard';
+import { lazy, Suspense } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { StoreProvider } from './context/Store';
+import Layout from './components/Layout';
+import ScrollToTop from './components/ScrollToTop';
+import Home from './pages/Home';
+import Shop from './pages/Shop';
+import Categories from './pages/Categories';
+import How from './pages/How';
+import CustomizationPage from './pages/CustomizationPage';
+import ReviewsPage from './pages/ReviewsPage';
+import About from './pages/About';
+import Contact from './pages/Contact';
+import Checkout from './pages/Checkout';
+import Success from './pages/Success';
+import LegalPage from './pages/LegalPage';
+
+const Admin = lazy(() => import('./pages/Admin'));
 
 export default function App() {
   return (
-    <BoutiqueProvider>
-      <Header />
-      <MobileDrawer />
-      <main>
-        <Hero />
-        <Benefits />
-        <Categories />
-        <Products />
-        <Customization />
-        <Reviews />
-        <Story />
-      </main>
-      <Footer />
-      <FloatingActions />
-      <CartDrawer />
-      <Modals />
-      <AdminDashboard />
-      <svg width="0" height="0" style={{ position: 'absolute' }}>
-        <defs>
-          <linearGradient id="goldCrownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fef08a" />
-            <stop offset="50%" stopColor="#d4af37" />
-            <stop offset="100%" stopColor="#996515" />
-          </linearGradient>
-        </defs>
-      </svg>
-    </BoutiqueProvider>
+    <StoreProvider>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/shop/:slug" element={<Shop />} />
+            <Route path="/how" element={<How />} />
+            <Route path="/customization" element={<CustomizationPage />} />
+            <Route path="/reviews" element={<ReviewsPage />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/order" element={<Checkout />} />
+            <Route path="/success" element={<Success />} />
+            <Route path="/privacy" element={<LegalPage />} />
+            <Route path="/terms" element={<LegalPage />} />
+            <Route path="/shipping" element={<LegalPage />} />
+            <Route path="/refunds" element={<LegalPage />} />
+            <Route
+              path="/admin"
+              element={
+                <Suspense fallback={<p className="section-container page-pad text-center">Loading control room…</p>}>
+                  <Admin />
+                </Suspense>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      </BrowserRouter>
+    </StoreProvider>
   );
 }
